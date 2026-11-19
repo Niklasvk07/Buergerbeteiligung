@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { projects, polls, STAGES } from "@/lib/data";
-import { OfficeAvatar } from "@/components/ui";
+import { CityAvatar } from "@/components/ui";
 
 export default function Mitteilungen() {
   const items = [
@@ -46,7 +46,7 @@ export default function Mitteilungen() {
                   i.unread ? "bg-brand-soft/60" : ""
                 }`}
               >
-                <OfficeAvatar size={44} />
+                <CityAvatar size={40} />
                 <p className="flex-1 text-[14px] leading-snug">{i.text}</p>
                 <span className="shrink-0 text-[12px] text-muted">{i.time}</span>
               </Link>

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { getProject, polls, type Poll } from "@/lib/data";
 import { RatingPoll } from "@/components/RatingPoll";
-import { Cover } from "@/components/ui";
 
 export default function Umfragen() {
   const open = polls.filter((p) => p.daysLeft > 0).sort((a, b) => a.daysLeft - b.daysLeft);
@@ -32,7 +31,8 @@ function PollCard({ poll }: { poll: Poll }) {
   return (
     <article className="card overflow-hidden max-sm:rounded-none">
       <Link href={`/projekte/${project.id}`} className="flex items-center gap-3 border-b border-line p-3 hover:bg-black/[0.02]">
-        <Cover project={project} className="h-12 w-12 shrink-0 rounded-md [&>span]:hidden [&>svg]:bottom-2.5 [&>svg]:right-2.5 [&>svg]:h-7 [&>svg]:w-7" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={project.image} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
         <div className="min-w-0 flex-1 leading-tight">
           <p className="truncate text-[14px] font-semibold">{project.title}</p>
           <p className="text-[12px] text-muted">

@@ -7,7 +7,6 @@ import { X } from "lucide-react";
 import { getProject, polls } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { RatingPoll } from "./RatingPoll";
-import { Cover } from "./ui";
 
 const SEEN = "mitreden-popup-seen";
 
@@ -50,11 +49,12 @@ export function PollPopup() {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center animate-fade" onClick={close}>
       <div
-        className="animate-rise w-full max-w-[440px] overflow-hidden rounded-t-2xl bg-white sm:rounded-xl"
+        className="animate-rise w-full max-w-[440px] overflow-hidden rounded-t-3xl bg-white sm:rounded-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative">
-          <Cover project={project} className="h-[110px]" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={project.image} alt="" className="h-[140px] w-full object-cover" />
           <button
             onClick={close}
             className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/30 text-white hover:bg-black/45"

@@ -1,6 +1,27 @@
 export const STAGES = ["Idee", "Planung", "Beschluss", "Bau", "Fertig"] as const;
 
+export const KOMMUNE = { name: "Saarbrücken", einwohner: 180_000 };
+
+export const KOMMUNEN = [
+  { name: "Saarbrücken", active: true },
+  { name: "Völklingen", active: false },
+  { name: "Saarlouis", active: false },
+  { name: "Homburg", active: false },
+];
+
+export const DISTRICTS = [
+  "St. Johann",
+  "Alt-Saarbrücken",
+  "Malstatt",
+  "Burbach",
+  "Dudweiler",
+  "St. Arnual",
+  "Eschberg",
+  "Brebach-Fechingen",
+];
+
 export type Category = "Verkehr" | "Bildung" | "Umwelt" | "Freizeit" | "Stadtbild";
+export const CATEGORIES: Category[] = ["Verkehr", "Bildung", "Umwelt", "Freizeit", "Stadtbild"];
 
 export type Comment = {
   id: string;
@@ -14,26 +35,39 @@ export type Comment = {
 };
 
 export type Update = { date: string; stage: number; text: string };
+export type Funding = { label: string; mio: number };
 
 export type Project = {
   id: string;
   title: string;
   teaser: string;
+  image: string;
   category: Category;
   district: string;
   stage: number;
   posted: string;
-  office: string;
-  cost: string;
+  costMio: number;
+  costNote?: string;
   timeframe: string;
-  budget: "gruen" | "gelb" | "rot";
+  nextDate?: string;
+  funding: Funding[];
   facts: string[];
   updates: Update[];
   likes: number;
   comments: Comment[];
   pollId?: string;
-  map: { x: number; y: number };
-  hue: [string, string];
+};
+
+export type News = {
+  id: string;
+  tag: "Baustelle" | "Termin" | "Ergebnis";
+  title: string;
+  text: string;
+  image?: string;
+  district: string;
+  posted: string;
+  likes: number;
+  projectId?: string;
 };
 
 export type Poll = {
@@ -44,54 +78,50 @@ export type Poll = {
   high: string;
   daysLeft: number;
   votes: number[]; // index 0 = Note 1 … index 9 = Note 10
+  outcome?: string;
 };
 
-export const CATEGORY_COLORS: Record<Category, string> = {
-  Verkehr: "#0a66c2",
-  Bildung: "#7a3ee8",
-  Umwelt: "#057642",
-  Freizeit: "#e06d10",
-  Stadtbild: "#b24020",
-};
+const img = (id: string) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=1200&q=75`;
 
 export const projects: Project[] = [
   {
-    id: "radweg-hauptstrasse",
-    title: "Geschützter Radweg Hauptstraße",
-    teaser: "1,4 km baulich getrennter Radweg zwischen Bahnhof und Rathaus.",
+    id: "radweg-mainzer-strasse",
+    title: "Geschützter Radweg Mainzer Straße",
+    teaser: "1,4 km baulich getrennter Radweg zwischen Hauptbahnhof und Landwehrplatz.",
+    image: img("photo-1760296404401-a2a1d4d252ee"),
     category: "Verkehr",
-    district: "Altstadt",
+    district: "St. Johann",
     stage: 1,
-    posted: "2 Std.",
-    office: "Amt für Mobilität",
-    cost: "1,2 Mio €",
+    posted: "vor 2 Std.",
+    costMio: 1.2,
     timeframe: "2027 – 2028",
-    budget: "gruen",
+    nextDate: "Bürgerversammlung am 4. Dez.",
+    funding: [
+      { label: "Land", mio: 0.72 },
+      { label: "Stadt", mio: 0.48 },
+    ],
     facts: [
-      "Parkplätze entfallen auf einer Seite (ca. 40).",
-      "Zu 60 % durch Landesmittel gefördert.",
-      "Bauzeit abschnittsweise, Straße bleibt befahrbar.",
+      "Auf einer Seite entfallen ca. 40 Parkplätze.",
+      "Bauzeit abschnittsweise, die Straße bleibt befahrbar.",
     ],
     updates: [
-      { date: "12. Nov.", stage: 1, text: "Erste Entwurfsvarianten liegen vor." },
+      { date: "12. Nov.", stage: 1, text: "Zwei Entwurfsvarianten liegen vor." },
       { date: "03. Sep.", stage: 0, text: "Antrag aus der Bürgerversammlung aufgenommen." },
     ],
     likes: 214,
     pollId: "p-radweg",
-    map: { x: 46, y: 44 },
-    hue: ["#0a66c2", "#4fa3e3"],
     comments: [
       {
         id: "c1",
         author: "Jana K.",
-        district: "Altstadt",
-        text: "Endlich! Morgens mit Kindern ist die Hauptstraße aktuell echt gefährlich.",
+        district: "St. Johann",
+        text: "Endlich! Morgens mit Kindern ist die Mainzer Straße aktuell echt gefährlich.",
         time: "1 Std.",
         likes: 32,
         replies: [
           {
             id: "c1r",
-            author: "Amt für Mobilität",
+            author: "Stadt Saarbrücken",
             text: "Danke! Die Schulwege sind in Variante B extra berücksichtigt.",
             time: "40 Min.",
             likes: 12,
@@ -102,7 +132,7 @@ export const projects: Project[] = [
       {
         id: "c2",
         author: "Thomas R.",
-        district: "Nordviertel",
+        district: "Alt-Saarbrücken",
         text: "Wohin sollen die Lieferwagen der Geschäfte ausweichen?",
         time: "50 Min.",
         likes: 18,
@@ -110,43 +140,42 @@ export const projects: Project[] = [
     ],
   },
   {
-    id: "kita-sonnenhof",
-    title: "Neubau Kita Sonnenhof",
-    teaser: "80 neue Betreuungsplätze in Holzbauweise.",
+    id: "kita-burbach",
+    title: "Neue Kita in Burbach",
+    teaser: "80 Betreuungsplätze in Holzbauweise, 30 davon für unter Dreijährige.",
+    image: img("photo-1770096679916-2cd9c720d400"),
     category: "Bildung",
-    district: "Südstadt",
+    district: "Burbach",
     stage: 3,
-    posted: "1 Tag",
-    office: "Amt für Bildung",
-    cost: "4,8 Mio €",
+    posted: "vor 1 Tag",
+    costMio: 4.8,
     timeframe: "2025 – Sommer 2027",
-    budget: "gelb",
-    facts: [
-      "Rohbau fertig, Innenausbau läuft.",
-      "Kosten 6 % über Plan (Materialpreise).",
-      "Anmeldung startet im Frühjahr 2027.",
+    nextDate: "Anmeldung ab März 2027",
+    funding: [
+      { label: "Land", mio: 2.0 },
+      { label: "Stadt", mio: 1.8 },
+      { label: "Bund", mio: 1.0 },
     ],
+    facts: ["Rohbau fertig, Innenausbau läuft.", "Kosten 6 % über Plan wegen gestiegener Materialpreise."],
     updates: [
-      { date: "10. Nov.", stage: 3, text: "Richtfest gefeiert, Dach ist dicht." },
+      { date: "10. Nov.", stage: 3, text: "Richtfest gefeiert, das Dach ist dicht." },
       { date: "02. Apr.", stage: 3, text: "Baubeginn." },
       { date: "14. Dez.", stage: 2, text: "Stadtrat hat einstimmig zugestimmt." },
     ],
     likes: 389,
-    map: { x: 62, y: 74 },
-    hue: ["#7a3ee8", "#b18cf5"],
     comments: [
       {
         id: "c3",
         author: "Mehmet A.",
-        district: "Südstadt",
-        text: "Wird es auch Plätze für unter Dreijährige geben?",
+        district: "Burbach",
+        text: "Gibt es auch längere Öffnungszeiten für Schichtarbeiter?",
         time: "5 Std.",
         likes: 21,
         replies: [
           {
             id: "c3r",
-            author: "Amt für Bildung",
-            text: "Ja, 30 der 80 Plätze sind für U3 vorgesehen.",
+            author: "Stadt Saarbrücken",
+            text: "Geplant ist 6:30 bis 18 Uhr. Wir prüfen gerade eine Spätgruppe.",
             time: "3 Std.",
             likes: 15,
             official: true,
@@ -156,103 +185,98 @@ export const projects: Project[] = [
     ],
   },
   {
-    id: "freibad",
-    title: "Sanierung Freibad am Mühlbach",
-    teaser: "Neue Technik, Kinderbecken und längere Öffnungszeiten.",
+    id: "freibad-dudweiler",
+    title: "Sanierung Freibad Dudweiler",
+    teaser: "Neue Technik, ein Kinderbecken und Abendschwimmen bis 21 Uhr.",
+    image: img("photo-1791521157092-b69b07a479d8"),
     category: "Freizeit",
-    district: "Mühlbach",
+    district: "Dudweiler",
     stage: 2,
-    posted: "3 Tage",
-    office: "Amt für Sport",
-    cost: "3,1 Mio €",
+    posted: "vor 3 Tagen",
+    costMio: 3.1,
     timeframe: "Herbst 2027",
-    budget: "gruen",
-    facts: [
-      "Saison 2027 bleibt das Bad geöffnet.",
-      "Abendschwimmen bis 21 Uhr geplant.",
-      "Solarthermie heizt künftig die Becken.",
+    nextDate: "Stadtrat entscheidet am 11. Dez.",
+    funding: [
+      { label: "Stadt", mio: 1.6 },
+      { label: "Land", mio: 0.9 },
+      { label: "EU", mio: 0.6 },
     ],
+    facts: ["Die Saison 2027 bleibt das Bad geöffnet.", "Solarthermie heizt künftig die Becken."],
     updates: [
       { date: "08. Nov.", stage: 2, text: "Vorlage geht im Dezember in den Stadtrat." },
       { date: "20. Jun.", stage: 1, text: "Gutachten zur Technik abgeschlossen." },
     ],
     likes: 502,
     pollId: "p-freibad",
-    map: { x: 22, y: 58 },
-    hue: ["#e06d10", "#f6b04a"],
     comments: [
       {
         id: "c4",
         author: "Lisa M.",
-        district: "Mühlbach",
-        text: "Abendschwimmen wäre super für Berufstätige.",
+        district: "Dudweiler",
+        text: "Abendschwimmen wäre super für alle, die tagsüber arbeiten.",
         time: "2 Tage",
         likes: 47,
       },
     ],
   },
   {
-    id: "buergerpark",
+    id: "buergerpark-malstatt",
     title: "Bürgerpark auf der Brache",
-    teaser: "Aus dem alten Güterbahnhof soll ein Park werden. Was wünschst du dir?",
+    teaser: "Aus dem alten Güterbahnhof in Malstatt soll ein Park werden. Was wünschst du dir?",
+    image: img("photo-1736600119767-1a0217d12273"),
     category: "Umwelt",
-    district: "Nordviertel",
+    district: "Malstatt",
     stage: 0,
-    posted: "5 Tage",
-    office: "Amt für Stadtgrün",
-    cost: "noch offen",
+    posted: "vor 5 Tagen",
+    costMio: 2.5,
+    costNote: "Schätzung",
     timeframe: "ab 2028",
-    budget: "gelb",
-    facts: [
-      "Fläche: 3,5 Hektar.",
-      "Ideen-Werkstatt am 28. November.",
-      "Förderantrag beim Bund in Vorbereitung.",
+    nextDate: "Ideen-Werkstatt am 28. Nov.",
+    funding: [
+      { label: "Bund (beantragt)", mio: 2.0 },
+      { label: "Stadt", mio: 0.5 },
     ],
-    updates: [{ date: "11. Nov.", stage: 0, text: "Fläche wurde von der Bahn gekauft." }],
+    facts: ["Fläche: 3,5 Hektar.", "Die Stadt hat die Fläche von der Bahn gekauft."],
+    updates: [{ date: "11. Nov.", stage: 0, text: "Kauf der Fläche abgeschlossen." }],
     likes: 276,
     pollId: "p-park",
-    map: { x: 58, y: 18 },
-    hue: ["#057642", "#5fbf7f"],
     comments: [],
   },
   {
     id: "led-licht",
     title: "LED-Straßenbeleuchtung",
-    teaser: "Alle 2.300 Laternen umgerüstet – 62 % weniger Strom.",
+    teaser: "Alle 9.800 Laternen umgerüstet – 62 % weniger Strom.",
+    image: img("photo-1566276423184-a8c13d2a88a1"),
     category: "Umwelt",
-    district: "Gesamte Stadt",
+    district: "ganze Stadt",
     stage: 4,
-    posted: "1 Woche",
-    office: "Stadtwerke",
-    cost: "1,9 Mio €",
+    posted: "vor 1 Woche",
+    costMio: 1.9,
     timeframe: "abgeschlossen",
-    budget: "gruen",
-    facts: [
-      "Spart rund 410.000 € Stromkosten pro Jahr.",
-      "Nachts automatisch gedimmt.",
-      "Unter Budget abgeschlossen.",
+    funding: [
+      { label: "Stadt", mio: 1.1 },
+      { label: "Bund", mio: 0.8 },
     ],
+    facts: ["Spart rund 410.000 € Stromkosten pro Jahr.", "Nachts automatisch gedimmt."],
     updates: [
       { date: "04. Nov.", stage: 4, text: "Letzte Laterne umgerüstet." },
       { date: "15. Feb.", stage: 3, text: "Umrüstung gestartet." },
     ],
     likes: 618,
     pollId: "p-led",
-    map: { x: 80, y: 40 },
-    hue: ["#00563b", "#3a9a6e"],
     comments: [
       {
         id: "c5",
         author: "Peter S.",
-        district: "Ostend",
+        district: "Eschberg",
         text: "Am Ostring ist es seitdem deutlich zu dunkel.",
         time: "6 Tage",
         likes: 9,
         replies: [
           {
             id: "c5r",
-            author: "Stadtwerke",
-            text: "Danke für den Hinweis, wir prüfen die Dimmung dort.",
+            author: "Stadt Saarbrücken",
+            text: "Danke für den Hinweis, die Dimmung dort wird angepasst.",
             time: "5 Tage",
             likes: 6,
             official: true,
@@ -262,35 +286,66 @@ export const projects: Project[] = [
     ],
   },
   {
-    id: "marktplatz",
-    title: "Neugestaltung Marktplatz",
-    teaser: "Mehr Bäume, Wasserspiel und Platz für den Wochenmarkt.",
+    id: "st-johanner-markt",
+    title: "Neugestaltung St. Johanner Markt",
+    teaser: "Mehr Bäume, Schatten und Sitzplätze für heiße Sommer.",
+    image: img("photo-1706650734164-91a863a73ecc"),
     category: "Stadtbild",
-    district: "Altstadt",
+    district: "St. Johann",
     stage: 1,
-    posted: "2 Wochen",
-    office: "Stadtplanung",
-    cost: "2,6 Mio €",
+    posted: "vor 2 Wochen",
+    costMio: 2.6,
     timeframe: "2028",
-    budget: "gelb",
-    facts: [
-      "Drei Entwürfe im Wettbewerb.",
-      "Wochenmarkt bleibt während der Bauzeit.",
-      "Entscheidung im Frühjahr 2027.",
+    nextDate: "Entwürfe ab Frühjahr 2027",
+    funding: [
+      { label: "Land", mio: 1.4 },
+      { label: "Stadt", mio: 1.2 },
     ],
+    facts: ["Drei Entwürfe im Wettbewerb.", "Gastronomie bleibt während der Bauzeit geöffnet."],
     updates: [{ date: "30. Okt.", stage: 1, text: "Wettbewerb ausgeschrieben." }],
     likes: 143,
-    map: { x: 40, y: 34 },
-    hue: ["#b24020", "#e58a5f"],
     comments: [],
+  },
+];
+
+export const news: News[] = [
+  {
+    id: "n-sperrung",
+    tag: "Baustelle",
+    title: "Sperrung Mainzer Straße am Samstag",
+    text: "Leitungsarbeiten von 7 bis 18 Uhr. Busse fahren eine Umleitung.",
+    image: img("photo-1762247019055-f0170f1c7245"),
+    district: "St. Johann",
+    posted: "vor 4 Std.",
+    likes: 37,
+  },
+  {
+    id: "n-led-ergebnis",
+    tag: "Ergebnis",
+    title: "LED-Licht: 7,2 von 10 Punkten",
+    text: "Danke für 490 Stimmen! Eure Hinweise zum Ostring setzen wir jetzt um.",
+    district: "ganze Stadt",
+    posted: "vor 2 Tagen",
+    likes: 88,
+    projectId: "led-licht",
+  },
+  {
+    id: "n-sprechstunde",
+    tag: "Termin",
+    title: "Bürgersprechstunde im Rathaus",
+    text: "Donnerstag, 17 Uhr, Rathaus St. Johann. Ohne Anmeldung.",
+    image: img("photo-1503428593586-e225b39bddfe"),
+    district: "St. Johann",
+    posted: "vor 4 Tagen",
+    likes: 21,
   },
 ];
 
 export const polls: Poll[] = [
   {
     id: "p-radweg",
-    projectId: "radweg-hauptstrasse",
-    question: "Wie wichtig ist dir ein geschützter Radweg auf der Hauptstraße?",
+    projectId: "radweg-mainzer-strasse",
+    question: "Wie wichtig ist dir ein geschützter Radweg auf der Mainzer Straße?",
     low: "unwichtig",
     high: "sehr wichtig",
     daysLeft: 5,
@@ -298,7 +353,7 @@ export const polls: Poll[] = [
   },
   {
     id: "p-park",
-    projectId: "buergerpark",
+    projectId: "buergerpark-malstatt",
     question: "Wie gerne würdest du den Bürgerpark mitgestalten?",
     low: "gar nicht",
     high: "unbedingt",
@@ -307,7 +362,7 @@ export const polls: Poll[] = [
   },
   {
     id: "p-freibad",
-    projectId: "freibad",
+    projectId: "freibad-dudweiler",
     question: "Wie zufrieden bist du mit den geplanten Öffnungszeiten?",
     low: "unzufrieden",
     high: "sehr zufrieden",
@@ -322,14 +377,41 @@ export const polls: Poll[] = [
     high: "sehr gut",
     daysLeft: 0,
     votes: [12, 8, 10, 14, 30, 41, 88, 120, 96, 71],
+    outcome: "Am Ostring wird die Nachtabsenkung zurückgenommen – das war der häufigste Kritikpunkt.",
   },
 ];
 
-export const events = [
-  { date: "28", month: "Nov", title: "Ideen-Werkstatt Bürgerpark", place: "Alte Halle, Nordviertel" },
-  { date: "04", month: "Dez", title: "Bürgerversammlung Radweg", place: "Rathaus, Saal 1" },
-  { date: "11", month: "Dez", title: "Stadtratssitzung", place: "Rathaus, live im Stream" },
+export const BUERGERBUERO = {
+  name: "Bürgeramt Saarbrücken",
+  phone: "0681 000 000",
+  mail: "buergeramt@mitreden-demo.de",
+  hours: "Mo–Fr 8–16 Uhr, Do bis 18 Uhr",
+};
+
+/** Feed: Projekte und Meldungen gemischt, wie im Gemeindeblatt */
+export type FeedItem = { kind: "project"; item: Project } | { kind: "news"; item: News };
+export const feed: FeedItem[] = [
+  { kind: "project", item: projects[0] },
+  { kind: "news", item: news[0] },
+  { kind: "project", item: projects[1] },
+  { kind: "project", item: projects[2] },
+  { kind: "news", item: news[1] },
+  { kind: "project", item: projects[3] },
+  { kind: "news", item: news[2] },
+  { kind: "project", item: projects[4] },
+  { kind: "project", item: projects[5] },
 ];
 
 export const getProject = (id: string) => projects.find((p) => p.id === id);
 export const getPoll = (id?: string) => polls.find((p) => p.id === id);
+
+export const formatMio = (mio: number) =>
+  mio >= 1
+    ? `${mio.toLocaleString("de-DE", { maximumFractionDigits: 1 })} Mio €`
+    : `${Math.round(mio * 1000).toLocaleString("de-DE")} Tsd €`;
+
+export const perCapita = (mio: number) =>
+  `${((mio * 1_000_000) / KOMMUNE.einwohner).toLocaleString("de-DE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} €`;

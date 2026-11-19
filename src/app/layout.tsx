@@ -5,7 +5,7 @@ import { Nav } from "@/components/Nav";
 import { PollPopup } from "@/components/PollPopup";
 
 export const metadata: Metadata = {
-  title: "mitreden – Lindenfeld",
+  title: "mitreden – Saarbrücken",
   description: "Projekte deiner Stadt verfolgen, kommentieren und mitbestimmen.",
 };
 

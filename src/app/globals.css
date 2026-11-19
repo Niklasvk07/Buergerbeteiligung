@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  --color-page: #f4f2ee;
+  --color-page: #f3f2ef;
   --color-card: #ffffff;
-  --color-line: #e8e6e1;
-  --color-ink: #191919;
-  --color-muted: #666666;
-  --color-faint: #8c8c8c;
+  --color-line: #ebe9e5;
+  --color-ink: #16181c;
+  --color-muted: #5f6368;
+  --color-faint: #9aa0a6;
   --color-brand: #0a66c2;
   --color-brand-dark: #004182;
-  --color-brand-soft: #e8f1fb;
-  --color-good: #057642;
-  --color-warn: #c37d16;
-  --color-bad: #cc1016;
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, sans-serif;
+  --color-brand-soft: #eaf2fb;
+  --color-good: #0b7a4b;
+  --color-warn: #c2710c;
+  --color-bad: #d93025;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
 
 html,
@@ -25,12 +25,15 @@ body {
 body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
 }
 
 .card {
   background: var(--color-card);
-  border-radius: 10px;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08);
+  border-radius: 16px;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.04),
+    0 1px 2px rgb(0 0 0 / 0.04);
 }
 
 .no-scrollbar::-webkit-scrollbar {

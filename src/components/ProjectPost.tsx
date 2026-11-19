@@ -1,130 +1,206 @@
 "use client";
 
 import Link from "next/link";
-import { MessageSquare, Plus, Check, Send, ThumbsUp, SlidersHorizontal, ChevronRight } from "lucide-react";
-import type { Project } from "@/lib/data";
+import { useRouter } from "next/navigation";
+import { ArrowUpRight, Heart, MessageCircle, Plus, Check, SlidersHorizontal, CalendarDays, HardHat, BarChart3 } from "lucide-react";
+import type { Comment, News, Project } from "@/lib/data";
 import { getPoll } from "@/lib/data";
-import { useStore } from "@/lib/store";
-import { Cover, OfficeAvatar, StageTracker, Verified, formatCount } from "./ui";
+import { useCommentCount, useStore } from "@/lib/store";
+import { Chip, CityAvatar, PersonAvatar, Progress, Verified } from "./ui";
 
 export function FollowButton({ id }: { id: string }) {
   const { follows, toggleFollow } = useStore();
   const on = follows.includes(id);
   return (
     <button
-      onClick={() => toggleFollow(id)}
-      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[14px] font-semibold transition-colors ${
-        on ? "text-muted hover:bg-black/5" : "text-brand hover:bg-brand-soft"
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleFollow(id);
+      }}
+      className={`inline-flex h-8 items-center gap-1 rounded-full px-3 text-[13px] font-semibold transition-colors ${
+        on ? "bg-black/5 text-muted" : "bg-brand text-white hover:bg-brand-dark"
       }`}
     >
-      {on ? <Check size={16} /> : <Plus size={16} />}
+      {on ? <Check size={15} /> : <Plus size={15} />}
       {on ? "Folgst du" : "Folgen"}
     </button>
   );
 }
 
+export function Pill({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label?: React.ReactNode;
+  active?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.(e);
+      }}
+      className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold transition-colors ${
+        active ? "bg-[#fde8e7] text-bad" : "bg-[#f1f0ed] text-muted hover:bg-[#e8e6e2] hover:text-ink"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function LikePill({ id, base }: { id: string; base: number }) {
+  const { likes, toggleLike } = useStore();
+  const on = likes.includes(id);
+  return (
+    <Pill
+      icon={<Heart size={15} fill={on ? "currentColor" : "none"} />}
+      label={base + (on ? 1 : 0)}
+      active={on}
+      onClick={() => toggleLike(id)}
+    />
+  );
+}
+
+function topComment(seed: Comment[], extra: Comment[] = []): Comment | undefined {
+  return [...extra, ...seed].sort((a, b) => b.likes - a.likes)[0];
+}
+
+/** Reddit-artige Vorschau: der beliebteste Kommentar, angedeutet mit Thread-Linie */
+function CommentPreview({ project, count }: { project: Project; count: number }) {
+  const { comments } = useStore();
+  const c = topComment(project.comments, comments[project.id]);
+  if (!c) {
+    return <p className="text-[13px] text-muted">Noch keine Kommentare – sei die erste Stimme.</p>;
+  }
+  return (
+    <div>
+      <div className="flex gap-2.5">
+        {c.official ? <CityAvatar size={26} /> : <PersonAvatar name={c.author} size={26} />}
+        <div className="min-w-0 flex-1 border-l-2 border-line pl-2.5">
+          <p className="text-[13px] leading-snug">
+            <span className="font-semibold">{c.author}</span>
+            {c.official && <> <Verified /></>}
+            <span className="text-faint"> · {c.time}</span>
+          </p>
+          <p className="line-clamp-2 text-[14px] leading-snug text-ink/85">{c.text}</p>
+        </div>
+      </div>
+      {count > 1 && (
+        <p className="mt-2 pl-[36px] text-[13px] font-semibold text-brand">
+          {count - 1} weitere {count - 1 === 1 ? "Antwort" : "Antworten"} ansehen
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function ProjectPost({ project }: { project: Project }) {
-  const { likes, toggleLike, comments, votes } = useStore();
-  const liked = likes.includes(project.id);
-  const likeCount = project.likes + (liked ? 1 : 0);
-  const commentCount =
-    project.comments.reduce((n, c) => n + 1 + (c.replies?.length ?? 0), 0) +
-    (comments[project.id]?.length ?? 0);
+  const router = useRouter();
+  const { votes } = useStore();
+  const count = useCommentCount(project.id, project.comments);
   const poll = getPoll(project.pollId);
   const pollOpen = poll && poll.daysLeft > 0 && votes[poll.id] == null;
   const href = `/projekte/${project.id}`;
 
   return (
-    <article className="card overflow-hidden max-sm:rounded-none">
-      <header className="flex items-start gap-2 px-4 pt-3">
-        <OfficeAvatar />
-        <div className="min-w-0 flex-1 leading-tight">
-          <p className="text-[14px] font-semibold">
-            {project.office} <Verified />
-          </p>
-          <p className="text-[12px] text-muted">Stadt Lindenfeld · {project.district}</p>
-          <p className="text-[12px] text-muted">{project.posted}</p>
-        </div>
-        <FollowButton id={project.id} />
-      </header>
-
-      <Link href={href} className="block px-4 pb-3 pt-2">
-        <h2 className="text-[16px] font-semibold leading-snug">{project.title}</h2>
-        <p className="mt-0.5 text-[14px] text-ink/80">{project.teaser}</p>
-      </Link>
-
-      <Link href={href} className="block">
-        <Cover project={project} className="h-[220px]" />
-      </Link>
-
-      <div className="px-4 pb-1 pt-4">
-        <StageTracker stage={project.stage} />
-      </div>
-
-      {pollOpen && poll && (
-        <Link
-          href={href + "#umfrage"}
-          className="mx-4 mt-3 flex items-center gap-3 rounded-lg bg-brand-soft px-3 py-2.5 text-[14px] transition-colors hover:bg-[#dbe9f8]"
-        >
-          <SlidersHorizontal size={18} className="text-brand" />
-          <span className="flex-1 font-semibold text-brand-dark">Umfrage läuft · noch {poll.daysLeft} Tage</span>
-          <ChevronRight size={18} className="text-brand" />
-        </Link>
-      )}
-
-      <div className="mx-4 mt-3 flex items-center justify-between border-b border-line pb-2 text-[12px] text-muted">
-        <span className="inline-flex items-center gap-1">
-          <span className="grid h-4 w-4 place-items-center rounded-full bg-brand">
-            <ThumbsUp size={9} className="text-white" fill="white" />
-          </span>
-          {formatCount(likeCount)}
-        </span>
-        <Link href={href + "#kommentare"} className="hover:text-brand hover:underline">
-          {commentCount} Kommentare
-        </Link>
-      </div>
-
-      <div className="flex px-2 py-1">
-        <Action
-          icon={<ThumbsUp size={20} fill={liked ? "currentColor" : "none"} />}
-          label="Gefällt mir"
-          active={liked}
-          onClick={() => toggleLike(project.id)}
+    <article
+      onClick={() => router.push(href)}
+      className="card group cursor-pointer overflow-hidden transition-shadow hover:shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.06)] max-sm:rounded-none"
+    >
+      <div className="relative aspect-[16/9] overflow-hidden bg-[#e6e4df]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={project.image}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
         />
-        <Action icon={<MessageSquare size={20} />} label="Kommentieren" href={href + "#kommentare"} />
-        <Action icon={<Send size={20} />} label="Teilen" />
+        <div className="absolute left-3 top-3 flex gap-1.5">
+          <Chip>{project.category}</Chip>
+        </div>
+        {pollOpen && poll && (
+          <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 text-[12px] font-semibold text-white shadow">
+            <SlidersHorizontal size={13} /> Umfrage · noch {poll.daysLeft} Tage
+          </span>
+        )}
+      </div>
+
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[12px] text-muted">
+              {project.district} · {project.posted}
+            </p>
+            <h2 className="mt-0.5 text-[17px] font-semibold leading-snug tracking-[-0.01em]">{project.title}</h2>
+            <p className="mt-1 text-[14px] leading-snug text-muted">{project.teaser}</p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <Progress stage={project.stage} />
+        </div>
+
+        <div className="mt-4 border-t border-line pt-4">
+          <CommentPreview project={project} count={count} />
+        </div>
+
+        <div className="mt-4 flex items-center gap-2">
+          <LikePill id={project.id} base={project.likes} />
+          <Link href={href + "#kommentare"} onClick={(e) => e.stopPropagation()}>
+            <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-[#f1f0ed] px-3 text-[13px] font-semibold text-muted hover:bg-[#e8e6e2] hover:text-ink">
+              <MessageCircle size={15} /> {count}
+            </span>
+          </Link>
+          <Pill icon={<ArrowUpRight size={15} />} label="Teilen" />
+          <span className="ml-auto">
+            <FollowButton id={project.id} />
+          </span>
+        </div>
       </div>
     </article>
   );
 }
 
-function Action({
-  icon,
-  label,
-  active,
-  onClick,
-  href,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-  onClick?: () => void;
-  href?: string;
-}) {
-  const cls = `flex flex-1 items-center justify-center gap-1.5 rounded-md py-3 text-[14px] font-semibold transition-colors hover:bg-black/5 ${
-    active ? "text-brand" : "text-muted"
-  }`;
-  if (href)
-    return (
-      <Link href={href} className={cls}>
-        {icon}
-        <span className="max-sm:hidden">{label}</span>
-      </Link>
-    );
+const TAGS = {
+  Baustelle: { icon: HardHat, cls: "bg-[#fdf0e1] text-warn" },
+  Termin: { icon: CalendarDays, cls: "bg-brand-soft text-brand" },
+  Ergebnis: { icon: BarChart3, cls: "bg-[#e3f3ea] text-good" },
+} as const;
+
+export function NewsPost({ news }: { news: News }) {
+  const router = useRouter();
+  const { icon: Icon, cls } = TAGS[news.tag];
+  const clickable = !!news.projectId;
   return (
-    <button onClick={onClick} className={cls}>
-      {icon}
-      <span className="max-sm:hidden">{label}</span>
-    </button>
+    <article
+      onClick={clickable ? () => router.push(`/projekte/${news.projectId}`) : undefined}
+      className={`card overflow-hidden max-sm:rounded-none ${clickable ? "cursor-pointer" : ""}`}
+    >
+      <div className="flex gap-4 p-4 sm:p-5">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 text-[12px] text-muted">
+            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold ${cls}`}>
+              <Icon size={12} /> {news.tag}
+            </span>
+            {news.district} · {news.posted}
+          </div>
+          <h3 className="mt-2 text-[16px] font-semibold leading-snug">{news.title}</h3>
+          <p className="mt-0.5 text-[14px] leading-snug text-muted">{news.text}</p>
+          <div className="mt-3">
+            <LikePill id={news.id} base={news.likes} />
+          </div>
+        </div>
+        {news.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={news.image} alt="" loading="lazy" className="h-24 w-24 shrink-0 rounded-xl object-cover sm:h-28 sm:w-28" />
+        )}
+      </div>
+    </article>
   );
 }

@@ -85,7 +85,7 @@ export function ChatWidget() {
         setMsgs([...next, { role: "assistant", content: acc }]);
       }
     } catch {
-      setMsgs([...next, { role: "assistant", content: "Das hat leider nicht geklappt. Versuch es bitte noch einmal." }]);
+      setMsgs([...next, { role: "assistant", content: "Der Chat ist gerade nicht erreichbar. Läuft der Server noch? Versuch es gleich noch einmal." }]);
     } finally {
       setBusy(false);
     }
@@ -170,9 +170,10 @@ export function ChatWidget() {
             )}
             {noKey && (
               <div className="rounded-2xl bg-[#fdf0e1] p-4 text-[14px] leading-snug">
-                <p className="font-semibold">Noch kein Claude-API-Schlüssel hinterlegt</p>
+                <p className="font-semibold">Noch kein KI-Schlüssel hinterlegt</p>
                 <p className="mt-1 text-ink/80">
                   Lege im Projektordner eine Datei <code className="rounded bg-white/70 px-1">.env.local</code> mit{" "}
+                  <code className="rounded bg-white/70 px-1">GEMINI_API_KEY=…</code> oder{" "}
                   <code className="rounded bg-white/70 px-1">ANTHROPIC_API_KEY=…</code> an und starte den Server neu.
                 </p>
               </div>

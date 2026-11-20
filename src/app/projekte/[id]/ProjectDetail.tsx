@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarClock, MessageSquareText } from "lucide-react";
-import { formatMio, getPoll, getProject, perCapita, STAGES } from "@/lib/data";
+import { budgetStatus, formatMio, getPoll, getProject, perCapita, STAGES } from "@/lib/data";
 import { RatingPoll } from "@/components/RatingPoll";
 import { Comments } from "@/components/Comments";
 import { FollowButton } from "@/components/ProjectPost";
 import { ContactSheet } from "@/components/ContactSheet";
 import { OpenPollsCard } from "@/components/Sidebars";
-import { Chip, Progress } from "@/components/ui";
+import { Chip, PhotoCredit, Progress } from "@/components/ui";
+import { PollInfo } from "@/components/PollInfo";
+import { BudgetLight } from "@/components/BudgetLight";
 import { useCommentCount } from "@/lib/store";
 
 const FUND_COLORS = ["#0a66c2", "#70a6e0", "#b9d3ef", "#dfe9f5"];
@@ -20,6 +22,11 @@ export function ProjectDetail({ id }: { id: string }) {
   const poll = getPoll(project.pollId);
   const count = useCommentCount(project.id, project.comments);
   const [ask, setAsk] = useState(false);
+
+  // Beim Wechsel zu einem anderen Projekt immer oben starten (außer bei Sprungmarken)
+  useEffect(() => {
+    if (!window.location.hash) window.scrollTo({ top: 0 });
+  }, [id]);
   const total = project.funding.reduce((s, f) => s + f.mio, 0);
   // Prozente so runden, dass sie zusammen genau 100 ergeben
   const shares = project.funding.map((f) => Math.round((f.mio / total) * 100));
@@ -42,6 +49,7 @@ export function ProjectDetail({ id }: { id: string }) {
               </button>
               <Chip>{project.category}</Chip>
             </div>
+            <PhotoCredit credit={project.credit} className="absolute bottom-2 right-2" />
           </div>
 
           <div className="p-5 sm:p-7">
@@ -89,6 +97,8 @@ export function ProjectDetail({ id }: { id: string }) {
             <Stat label="Zeitraum" value={project.timeframe} />
           </div>
 
+          <BudgetLight project={project} status={budgetStatus(project)} />
+
           <p className="mt-6 text-[13px] font-semibold text-muted">Woher kommt das Geld?</p>
           <div className="mt-2 flex h-3 overflow-hidden rounded-full">
             {project.funding.map((f, i) => (
@@ -111,7 +121,8 @@ export function ProjectDetail({ id }: { id: string }) {
             <p className="text-[12px] font-semibold uppercase tracking-wide text-brand">
               {poll.daysLeft > 0 ? `Umfrage · noch ${poll.daysLeft} Tage` : "Umfrage beendet"}
             </p>
-            <h2 className="mb-5 mt-1 text-[18px] font-semibold leading-snug">{poll.question}</h2>
+            <h2 className="mb-4 mt-1 text-[18px] font-semibold leading-snug">{poll.question}</h2>
+            <PollInfo items={poll.info} />
             <RatingPoll poll={poll} />
             {poll.outcome && (
               <div className="mt-5 rounded-xl bg-[#e3f3ea] p-4">

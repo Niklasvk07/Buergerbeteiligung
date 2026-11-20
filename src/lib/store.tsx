@@ -12,6 +12,8 @@ type State = {
   comments: Record<string, Comment[]>;
   questions: number;
   profile: Profile;
+  rewardDone: boolean;
+  playground: Record<string, string> | null;
 };
 
 const EMPTY: State = {
@@ -20,6 +22,8 @@ const EMPTY: State = {
   follows: [],
   comments: {},
   questions: 0,
+  rewardDone: false,
+  playground: null,
   profile: { kommune: "Saarbrücken", district: "St. Johann", topics: [] },
 };
 const KEY = "mitreden-v2";
@@ -32,6 +36,8 @@ type Ctx = State & {
   addComment: (projectId: string, text: string) => void;
   sendQuestion: () => void;
   setProfile: (p: Partial<Profile>) => void;
+  finishReward: () => void;
+  savePlayground: (grid: Record<string, string>) => void;
 };
 
 const StoreContext = createContext<Ctx | null>(null);
@@ -90,9 +96,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, profile: { ...s.profile, ...p } }));
   }, []);
 
+  const finishReward = useCallback(() => setState((s) => ({ ...s, rewardDone: true })), []);
+  const savePlayground = useCallback(
+    (grid: Record<string, string>) => setState((s) => ({ ...s, playground: grid })),
+    [],
+  );
+
   const value = useMemo(
-    () => ({ ...state, ready, vote, toggleLike, toggleFollow, addComment, sendQuestion, setProfile }),
-    [state, ready, vote, toggleLike, toggleFollow, addComment, sendQuestion, setProfile],
+    () => ({
+      ...state,
+      ready,
+      vote,
+      toggleLike,
+      toggleFollow,
+      addComment,
+      sendQuestion,
+      setProfile,
+      finishReward,
+      savePlayground,
+    }),
+    [state, ready, vote, toggleLike, toggleFollow, addComment, sendQuestion, setProfile, finishReward, savePlayground],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

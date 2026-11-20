@@ -77,7 +77,7 @@ export function RatingPoll({
   }
 
   return (
-    <div>
+    <div className="max-w-[540px]">
       <div className={`grid grid-cols-10 ${compact ? "gap-1" : "gap-1.5"}`}>
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => {
           const lit = hover != null && n <= hover;

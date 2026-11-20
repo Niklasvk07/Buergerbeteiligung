@@ -13,6 +13,7 @@
   --color-good: #0b7a4b;
   --color-warn: #c2710c;
   --color-bad: #d93025;
+  --font-serif: "Iowan Old Style", "Charter", "Georgia", "Times New Roman", serif;
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
 
@@ -28,12 +29,14 @@ body {
   letter-spacing: -0.005em;
 }
 
-.card {
-  background: var(--color-card);
-  border-radius: 16px;
-  box-shadow:
-    0 0 0 1px rgb(0 0 0 / 0.04),
-    0 1px 2px rgb(0 0 0 / 0.04);
+@layer components {
+  .card {
+    background: var(--color-card);
+    border-radius: 16px;
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.04),
+      0 1px 2px rgb(0 0 0 / 0.04);
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -66,4 +69,20 @@ body {
 }
 .animate-fade {
   animation: fade 0.2s ease-out;
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-pop {
+  animation: pop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }

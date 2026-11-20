@@ -63,7 +63,6 @@ export function ContactSheet({ topic, onClose }: { topic?: string; onClose: () =
             >
               Absenden
             </button>
-            <p className="mt-2 text-center text-[12px] text-faint">Demo – es wird nichts verschickt.</p>
           </form>
         )}
       </div>

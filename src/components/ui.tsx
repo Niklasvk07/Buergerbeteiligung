@@ -76,3 +76,5 @@ export function Chip({ children, className = "" }: { children: React.ReactNode; 
     </span>
   );
 }
+
+export { PhotoCredit } from "./PhotoCredit";

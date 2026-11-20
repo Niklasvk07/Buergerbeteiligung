@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, Heart, MessageCircle, Plus, Check, SlidersHorizontal, CalendarDays, HardHat, BarChart3 } from "lucide-react";
-import type { Comment, News, Project } from "@/lib/data";
+import { ArrowUpRight, Heart, MessageCircle, Plus, Check, SlidersHorizontal, CalendarDays, HardHat, BarChart3, CloudRain, Newspaper } from "lucide-react";
+import type { Article, Comment, News, Project } from "@/lib/data";
 import { getPoll } from "@/lib/data";
 import { useCommentCount, useStore } from "@/lib/store";
-import { Chip, CityAvatar, PersonAvatar, Progress, Verified } from "./ui";
+import { Chip, CityAvatar, PersonAvatar, PhotoCredit, Progress, Verified } from "./ui";
 
 export function FollowButton({ id }: { id: string }) {
   const { follows, toggleFollow } = useStore();
@@ -124,6 +124,7 @@ export function ProjectPost({ project }: { project: Project }) {
         <div className="absolute left-3 top-3 flex gap-1.5">
           <Chip>{project.category}</Chip>
         </div>
+        <PhotoCredit credit={project.credit} className="absolute bottom-2 right-2" />
         {pollOpen && poll && (
           <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 text-[12px] font-semibold text-white shadow">
             <SlidersHorizontal size={13} /> Umfrage · noch {poll.daysLeft} Tage
@@ -168,7 +169,8 @@ export function ProjectPost({ project }: { project: Project }) {
 }
 
 const TAGS = {
-  Baustelle: { icon: HardHat, cls: "bg-[#fdf0e1] text-warn" },
+  Verkehr: { icon: HardHat, cls: "bg-[#fdf0e1] text-warn" },
+  Unwetter: { icon: CloudRain, cls: "bg-[#e6eefc] text-[#3159b8]" },
   Termin: { icon: CalendarDays, cls: "bg-brand-soft text-brand" },
   Ergebnis: { icon: BarChart3, cls: "bg-[#e3f3ea] text-good" },
 } as const;
@@ -180,7 +182,9 @@ export function NewsPost({ news }: { news: News }) {
   return (
     <article
       onClick={clickable ? () => router.push(`/projekte/${news.projectId}`) : undefined}
-      className={`card overflow-hidden max-sm:rounded-none ${clickable ? "cursor-pointer" : ""}`}
+      className={`card overflow-hidden max-sm:rounded-none ${clickable ? "cursor-pointer" : ""} ${
+        news.urgent ? "shadow-[inset_4px_0_0_#d93025,0_0_0_1px_rgba(0,0,0,0.04)]" : ""
+      }`}
     >
       <div className="flex gap-4 p-4 sm:p-5">
         <div className="min-w-0 flex-1">
@@ -202,5 +206,33 @@ export function NewsPost({ news }: { news: News }) {
         )}
       </div>
     </article>
+  );
+}
+
+/** Stadtblatt-Teaser für den gemischten Feed */
+export function ArticleTeaser({ article }: { article: Article }) {
+  return (
+    <Link href={`/stadtblatt/${article.id}`} className="card group block overflow-hidden max-sm:rounded-none">
+      <div className="flex items-center gap-2 border-b border-line px-4 py-2.5 sm:px-5">
+        <Newspaper size={15} className="text-ink" />
+        <span className="font-serif text-[15px] font-bold tracking-tight">Stadtblatt</span>
+        <span className="text-[12px] text-muted">· {article.date}</span>
+      </div>
+      <div className="relative aspect-[2/1] overflow-hidden bg-[#e6e4df]">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={article.image}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+        />
+      </div>
+      <div className="p-4 sm:p-5">
+        <p className="text-[12px] font-semibold uppercase tracking-wide text-bad">{article.kicker}</p>
+        <h2 className="mt-1 font-serif text-[22px] font-bold leading-tight">{article.title}</h2>
+        <p className="mt-1.5 line-clamp-2 font-serif text-[15px] leading-snug text-ink/75">{article.lead}</p>
+        <p className="mt-3 text-[13px] font-semibold text-brand">Weiterlesen · {article.readMin} Min.</p>
+      </div>
+    </Link>
   );
 }

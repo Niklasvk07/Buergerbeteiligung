@@ -40,9 +40,6 @@ export function Nav() {
           >
             <MapPin size={12} /> {profile.kommune}
           </Link>
-          <span className="rounded-full border border-dashed border-faint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-faint">
-            Demo
-          </span>
 
           <nav className="ml-auto hidden items-center gap-1 md:flex">
             {items.map(({ href, label, icon: Icon }) => {

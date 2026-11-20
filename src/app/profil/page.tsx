@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Award, Check, Clock, Lock, Mail, MapPin, MessageCircle, Phone, Sparkles, SlidersHorizontal, Star, UserPlus, HelpCircle } from "lucide-react";
-import { BUERGERBUERO, CATEGORIES, DISTRICTS, KOMMUNEN } from "@/lib/data";
+import { Award, Check, Clock, Lock, Mail, MapPin, MessageCircle, Phone, Sparkles, SlidersHorizontal, Star, UserPlus, HelpCircle, Ticket, Shapes, Timer, Landmark, Database, Ear, Users, PiggyBank } from "lucide-react";
+import { BUERGERBUERO, CATEGORIES, CITY_BADGES, DISTRICTS, KOMMUNEN } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { ContactSheet } from "@/components/ContactSheet";
 
 export default function Profil() {
-  const { votes, follows, comments, questions, profile, setProfile, ready } = useStore();
+  const { votes, follows, comments, questions, profile, setProfile, ready, rewardDone, playground } = useStore();
   const [ask, setAsk] = useState(false);
 
   const nVotes = ready ? Object.keys(votes).length : 0;
@@ -20,9 +20,11 @@ export default function Profil() {
     { icon: MessageCircle, title: "Meinungsmacher", hint: "1 Kommentar", done: nComments >= 1 },
     { icon: UserPlus, title: "Dranbleiber", hint: "3 Projekten folgen", done: nFollows >= 3 },
     { icon: HelpCircle, title: "Neugierig", hint: "1 Frage gestellt", done: ready && questions >= 1 },
+    { icon: Ticket, title: "Glückspilz", hint: "Belohnungs-Umfrage", done: ready && rewardDone },
+    { icon: Shapes, title: "Stadtplaner", hint: "Spielplatz entworfen", done: ready && !!playground },
     { icon: Sparkles, title: "Lokalheld", hint: "alle Abzeichen", done: false },
   ];
-  badges[5].done = badges.slice(0, 5).every((b) => b.done);
+  badges[7].done = badges.slice(0, 7).every((b) => b.done);
   const earned = badges.filter((b) => b.done).length;
 
   return (
@@ -104,6 +106,37 @@ export default function Profil() {
         </div>
       </section>
 
+      {/* Abzeichen der Stadt */}
+      <section className="card p-5 max-sm:rounded-none">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-[16px] font-semibold">So macht&apos;s {profile.kommune}</h2>
+          <span className="text-[13px] text-muted">
+            {CITY_BADGES.filter((b) => b.progress >= 1).length} von {CITY_BADGES.length} erreicht
+          </span>
+        </div>
+        <p className="text-[13px] text-muted">Abzeichen der Stadt für gute Bürgerbeteiligung</p>
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {CITY_BADGES.map((b) => {
+            const Icon = CITY_ICONS[b.id] ?? Landmark;
+            const done = b.progress >= 1;
+            return (
+              <div key={b.id} className={`rounded-2xl p-3 ${done ? "bg-brand-soft" : "bg-[#f6f5f2]"}`}>
+                <div className="flex items-center gap-2.5">
+                  <Ring progress={b.progress} done={done}>
+                    <Icon size={16} />
+                  </Ring>
+                  <div className="min-w-0 leading-tight">
+                    <p className={`text-[13px] font-semibold leading-tight ${done ? "text-brand-dark" : ""}`}>{b.title}</p>
+                    <p className={`text-[12px] font-semibold ${done ? "text-brand" : "text-muted"}`}>{b.value}</p>
+                  </div>
+                </div>
+                <p className="mt-2 text-[11px] leading-snug text-muted">{b.hint}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Abzeichen */}
       <section className="card p-5 max-sm:rounded-none">
         <div className="flex items-baseline justify-between">
@@ -112,7 +145,7 @@ export default function Profil() {
             {earned} von {badges.length}
           </span>
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3">
+        <div className="mt-4 grid grid-cols-4 gap-x-2 gap-y-4">
           {badges.map(({ icon: Icon, title, hint, done }) => (
             <div key={title} className="flex flex-col items-center text-center">
               <span
@@ -153,7 +186,6 @@ export default function Profil() {
         >
           Frage an die Stadt stellen
         </button>
-        <p className="mt-2 text-center text-[12px] text-faint">Kontaktdaten sind Platzhalter (Demo).</p>
       </section>
 
       <p className="flex items-center justify-center gap-1.5 py-2 text-[12px] text-faint">
@@ -162,6 +194,39 @@ export default function Profil() {
 
       {ask && <ContactSheet onClose={() => setAsk(false)} />}
     </div>
+  );
+}
+
+const CITY_ICONS: Record<string, React.ElementType> = {
+  antwort: Timer,
+  transparent: Landmark,
+  opendata: Database,
+  zuhoerer: Ear,
+  buergernah: Users,
+  budget: PiggyBank,
+};
+
+function Ring({ progress, done, children }: { progress: number; done: boolean; children: React.ReactNode }) {
+  const r = 17;
+  const c = 2 * Math.PI * r;
+  return (
+    <span className="relative grid h-10 w-10 shrink-0 place-items-center">
+      <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90">
+        <circle cx="20" cy="20" r={r} fill="none" stroke={done ? "#cfe0f3" : "#e3e1dc"} strokeWidth="3" />
+        <circle
+          cx="20"
+          cy="20"
+          r={r}
+          fill="none"
+          stroke={done ? "#0a66c2" : "#9aa0a6"}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - Math.min(1, progress))}
+        />
+      </svg>
+      <span className={done ? "text-brand" : "text-muted"}>{children}</span>
+    </span>
   );
 }
 

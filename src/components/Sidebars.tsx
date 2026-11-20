@@ -17,7 +17,7 @@ export function OpenPollsCard() {
           return (
             <li key={p.id}>
               <Link
-                href={`/projekte/${project.id}#umfrage`}
+                href={`/projekte/${project.id}`}
                 className="-mx-2 flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-black/[0.03]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
